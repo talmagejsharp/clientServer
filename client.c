@@ -48,11 +48,19 @@ int main(int argc, char *argv[])
     if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
         error("ERROR connecting"); //prints errors
 
-    printf("Please enter the message: ");
-    bzero(buffer, 256);
-    fgets(buffer, 255, stdin);
+    char tempBuffer[256];
 
-    n = write(sockfd, buffer, strlen(buffer)); //attempts to write the message to the socket
+    printf("Please enter the filename of the desired file: ");
+    bzero(buffer, 256); // Clear buffer
+    fgets(tempBuffer, 255, stdin);
+
+    // Remove newline character from fgets, if present
+    tempBuffer[strcspn(tempBuffer, "\n")] = 0;
+
+    // Concatenate the filename and "<END>" flag
+    snprintf(buffer, sizeof(buffer), "%s<END>", tempBuffer);
+
+    n = write(sockfd, buffer, strlen(buffer));//attempts to write the message to the socket
     if (n < 0)
         error("ERROR writing to socket");
 

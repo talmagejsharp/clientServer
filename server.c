@@ -12,6 +12,17 @@ void error(const char *msg) //used to print errors.
     exit(1);
 }
 
+void handle_request(int socket, char requestBuffer[]){
+        int n = read(socket, requestBuffer, 255); //reads in the values from the client
+        if (n < 0)
+            error("ERROR reading from socket");
+        printf("Here is the message: %s\n", requestBuffer); //prints the values
+
+        n = write(socket, "I got your message", 18); //writes to the client
+        if (n < 0)
+            error("ERROR writing to socket");
+}
+
 int main(int argc, char *argv[])
 {
     int sockfd, newsockfd, portno;
@@ -49,15 +60,7 @@ int main(int argc, char *argv[])
         if (newsockfd < 0)
             error("ERROR on accept");
 
-        bzero(buffer, 256);
-        n = read(newsockfd, buffer, 255); //reads in the values from the client
-        if (n < 0)
-            error("ERROR reading from socket");
-        printf("Here is the message: %s\n", buffer); //prints the values
-
-        n = write(newsockfd, "I got your message", 18); //writes to the client
-        if (n < 0)
-            error("ERROR writing to socket");
+        handle_request(newsockfd, buffer);
 
         close(newsockfd); //closes the new socket
     }
