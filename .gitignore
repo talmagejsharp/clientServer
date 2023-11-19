@@ -1,0 +1,16 @@
+a.out
+server
+
+*.o
+
+*.so
+
+build/
+obj/
+
+.DS_Store
+Thumbs.db
+
+*~
+
+.vscode
