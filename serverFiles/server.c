@@ -7,7 +7,13 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <pthread.h>
 
+
+typedef struct {
+    int sockfd;
+    char buffer[256];
+} client_data;
 
 void error(const char *msg) //used to print errors.
 {
@@ -23,7 +29,7 @@ void handle_request(int socket, char requestBuffer[]) {
     if (endFlag != NULL) {
         *endFlag = '\0'; // Replace the start of "<END>" with a null terminator
     }
-    printf("Here is the message: %s\n", requestBuffer); // Prints the values
+    printf("File requested is: %s\n", requestBuffer); // Prints the values
 
     // Open the requested file
     FILE *file = fopen(requestBuffer, "rb"); // Open in binary mode
@@ -69,8 +75,17 @@ void handle_request(int socket, char requestBuffer[]) {
         }
         bytesSent += n;
     }
+    printf("File Sent \n");
 
     free(fileBuffer); // Free the allocated memory
+}
+
+void *thread_function(void *arg) {
+    client_data *data = (client_data *)arg;
+    handle_request(data->sockfd, data->buffer);
+    close(data->sockfd); // Close the client socket in the thread
+    free(data); // Free the dynamically allocated memory
+    return NULL;
 }
 
 int main(int argc, char *argv[])
@@ -104,17 +119,28 @@ int main(int argc, char *argv[])
     listen(sockfd, 5); //listens on the port
     clilen = sizeof(cli_addr);
 
-    while (1)
-    {
-        newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen); //accepts 1 request from a new client
-        if (newsockfd < 0)
+    while (1) {
+        client_data *data = malloc(sizeof(client_data)); // Allocate memory for the struct
+        if (data == NULL) {
+            error("ERROR allocating memory for client data");
+        }
+
+        data->sockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+        if (data->sockfd < 0)
             error("ERROR on accept");
 
-        handle_request(newsockfd, buffer);
+        printf("Accepting request (%d)\n", data->sockfd);
 
-        close(newsockfd); //closes the new socket
-    }
+        // Create a thread to handle the request
+        pthread_t thread_id;
+        if (pthread_create(&thread_id, NULL, thread_function, data) < 0) {
+            error("ERROR creating thread");
+        }
 
-    close(sockfd); //closes the port
+        // Optionally, detach the thread so that resources are freed upon its completion
+        pthread_detach(thread_id);
+    } //closes the port
     return 0;
 }
+
+
