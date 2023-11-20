@@ -81,6 +81,7 @@ void handle_request(int socket, char requestBuffer[]) {
 }
 
 void *thread_function(void *arg) {
+    printf("Launching a new thread to handle the request \n");
     client_data *data = (client_data *)arg;
     handle_request(data->sockfd, data->buffer);
     close(data->sockfd); // Close the client socket in the thread
