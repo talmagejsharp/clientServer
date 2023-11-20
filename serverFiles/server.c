@@ -17,7 +17,7 @@ void handle_request(int socket, char requestBuffer[]){
         if (n < 0)
             error("ERROR reading from socket");
         printf("Here is the message: %s\n", requestBuffer); //prints the values
-
+        
         n = write(socket, "I got your message", 18); //writes to the client
         if (n < 0)
             error("ERROR writing to socket");
