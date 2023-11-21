@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <pthread.h>
+//#include <semaphore.h>
+
+//sem_t emptySlots, filledSlots, bufferMutex;
 
 
 typedef struct {
@@ -91,6 +94,9 @@ void *thread_function(void *arg) {
 
 int main(int argc, char *argv[])
 {
+    /*sem_init(&emptySlots, 0, 1);
+    sem_init(&filledSlots, 0, 0);
+    sem_init(&bufferMutex, 0, 1);*/
     int sockfd, newsockfd, portno;
     socklen_t clilen;
     char buffer[256];
